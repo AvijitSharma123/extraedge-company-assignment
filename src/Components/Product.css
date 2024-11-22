@@ -1,0 +1,29 @@
+
+  .container {
+    padding: 20px;
+  }
+  
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .ant-card-cover img {
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  /* .ant-card {
+     height: 300px;
+     width: 300px;
+  }
+   */
+
+
+  /* .ant-card-meta-description {
+    height: 100px;
+    overflow: auto;
+  } */
+  
