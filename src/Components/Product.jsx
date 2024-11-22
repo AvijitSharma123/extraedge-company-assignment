@@ -5,12 +5,11 @@ import { deleteUser, getUserFailure, getUserRequest, getUserSuccess, sendNewData
 import axios from 'axios';
 
 import { Card, Col, Row, Modal, Form, Input, Button, Spin } from 'antd';
-import { HeartOutlined,HeartTwoTone, EditOutlined, DeleteFilled, MailOutlined, PhoneOutlined, GlobalOutlined, HomeOutlined, HeartFilled, BorderBottomOutlined, BorderOuterOutlined } from '@ant-design/icons';
+import { HeartOutlined, EditOutlined, DeleteFilled, MailOutlined, PhoneOutlined, GlobalOutlined, HeartFilled} from '@ant-design/icons';
 // import 'antd/dist/antd.css';
 
 
 const Product = () => {
-
    
 const users= useSelector((store)=>store.users)
 const loading =useSelector((store)=>store.isLoading)
@@ -21,10 +20,7 @@ const [currentUser, setCurrentUser] = useState(null);
 const [likedUsers, setLikedUsers] = useState(new Set());
 const [form] = Form.useForm();
 
-
-
-
-console.log(users)
+//fetching data from Json server
 const getUserData=async()=>{
     try {
         dispatch(getUserRequest());
@@ -39,7 +35,6 @@ const getUserData=async()=>{
               return { ...user, avatar: avatarUrl };
             })
           );
-        // dispatch(getUserSuccess(userData.data))
         dispatch(getUserSuccess(usersWithAvatars))
     } catch (error) {
         dispatch(getUserFailure())
@@ -47,10 +42,9 @@ const getUserData=async()=>{
 }
 
 //==================================================
+//updating user data
 const updatedDataOfUser=()=>{
-
   if(currentUser){
-    console.log(currentUser)
   const {id}=currentUser;
  const newData= users.map((item)=>{
         if(item.id===id){
@@ -63,8 +57,7 @@ const updatedDataOfUser=()=>{
           }
         }
   })
-  // dispatch(sendNewData(newData))
-  console.log(newData);
+  dispatch(sendNewData(newData))
 }
 }
 //=======================================================
@@ -73,13 +66,13 @@ useEffect(()=>{
     getUserData();
 },[])
 
-// useEffect(()=>{
-//   updatedDataOfUser();
-// },[currentUser])
+useEffect(()=>{
+  updatedDataOfUser();
+},[currentUser])
 
 
 
-
+//modal appearing functionality
 const showModal = (user) => {
     setCurrentUser(user);
     form.setFieldsValue({
@@ -90,30 +83,35 @@ const showModal = (user) => {
     });
     setIsModalVisible(true);
   };
-//===============================================================================
-  const handleOk = () => {
-    form.validateFields().then((values) => {
-      setCurrentUser((prev)=>{ 
-        const updatedUser = { ...prev, ...values }
-        return updatedUser;
-      })
-      // console.log('Updated user:', values);
-      setIsModalVisible(false);
-    });
 
-    setTimeout(()=>{updatedDataOfUser()},1000)
-    
-  
-   
-    
+  //===================================
+  //handling "OK" button click of Modal
+  const handleOk = async() => {
+    try {
+      let values= await form.validateFields();
+      setIsModalVisible(false);
+      updateUser(values);
+      
+    } catch (error) {
+       console.log(error);
+    }
   };
-  
-  console.log(currentUser);
+
+  //adding updated details/information of user to a state 
+  const updateUser=(props)=>{
+    setCurrentUser((prev)=>{ 
+      const updatedUser = { ...prev, ...props }
+      return updatedUser;
+    })
+  }
 //=================================================================================
+
+//modal disappearing functionality
   const handleCancel = () => {
     setIsModalVisible(false);
   };
 
+//like functionality
   const toggleLike = (userId) => {
     setLikedUsers((prev) => {
       const newLikedUsers = new Set(prev);
@@ -126,11 +124,8 @@ const showModal = (user) => {
     });
   };
 
+  //delete functionality
   const handleDelete=(userId)=>{
-    fetch(`https://jsonplaceholder.typicode.com/users/${userId}`, {
-        method: 'DELETE',
-      });
-
       let filteredData= users.filter((user)=>user.id!==userId);
       dispatch(deleteUser(filteredData))
       console.log("delete button clicked")
@@ -158,17 +153,18 @@ const showModal = (user) => {
                 />
               }
               actions={[
-
-                <HeartFilled
                 
+                likedUsers.has(user.id) ? (
+                <HeartFilled
                   key="heart"
                   onClick={() => toggleLike(user.id)}
-                //   style={{ color: likedUsers.has(user.id) ? 'red' : 'inherit' }}
                   style={{ 
                     color: likedUsers.has(user.id) ? 'red' : 'rgba(0, 0, 0, 0.45)',
-                    fontSize: '18px'
                   }}
-                />,
+                />):(
+                  <HeartOutlined key="heart" style={{ color: 'red' }}  onClick={() => toggleLike(user.id)} />
+                ),
+
                 <EditOutlined key="edit" onClick={() => showModal(user)} />,
                 <DeleteFilled  key="delete" onClick={()=>handleDelete(user.id)}/>
               ]}
@@ -198,10 +194,9 @@ const showModal = (user) => {
           borderTop: '1px solid #333',
           paddingTop:"10px"
         },
-        // title:{
-        //    BorderOuterOutlined: '1px solid #333',
-        //   paddingBottom:"10px"
-        // }
+        title:{
+           borderBottom:'1px solid black'
+        }
       }}
         footer={[
           <Button key="back" onClick={handleCancel}>
@@ -215,9 +210,6 @@ const showModal = (user) => {
         <Form form={form} 
            labelCol={{span:8}}
            wrapperCol={{span:17}}
-          //  onFinish={(values)=>{
-          //   console.log({values});
-          //  }}
            >
           <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please input the name!' }]}>
             <Input />
@@ -240,5 +232,3 @@ const showModal = (user) => {
 }
 
 export default Product
-
-//layout="vertical"
